@@ -1,0 +1,223 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { QuestionSet } from "@/types/question";
+import {
+  getAllPapers,
+  savePaper,
+  deletePaper,
+} from "@/lib/storage";
+import { sampleQuestionSet } from "@/data/sampleData";
+import QuizContainer from "@/components/QuizContainer";
+import Sidebar from "@/components/Sidebar";
+import NewPaperModal from "@/components/NewPaperModal";
+import EditPaperModal from "@/components/EditPaperModal";
+import SettingsModal from "@/components/SettingsModal";
+import {
+  PanelLeft,
+  Settings,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function Home() {
+  const [papers, setPapers] = useState<QuestionSet[]>([]);
+  const [currentPaperId, setCurrentPaperId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showNewPaperModal, setShowNewPaperModal] = useState(false);
+  const [editingPaper, setEditingPaper] = useState<QuestionSet | null>(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // 加载数据
+  useEffect(() => {
+    const loadedPapers = getAllPapers();
+    
+    // 如果没有数据，加载示例数据
+    if (loadedPapers.length === 0) {
+      savePaper(sampleQuestionSet);
+      setPapers([sampleQuestionSet]);
+      setCurrentPaperId(sampleQuestionSet.id);
+    } else {
+      setPapers(loadedPapers);
+      setCurrentPaperId(loadedPapers[0].id);
+    }
+  }, []);
+
+  const currentPaper = papers.find((p) => p.id === currentPaperId);
+
+  const handleSelectPaper = (id: string) => {
+    setCurrentPaperId(id);
+    setSidebarOpen(false);
+  };
+
+  const handleNewPaper = () => {
+    setShowNewPaperModal(true);
+    setSidebarOpen(false);
+  };
+
+  const handlePaperCreated = (updatedPapers: QuestionSet[], newPaperId: string) => {
+    setPapers(updatedPapers);
+    setCurrentPaperId(newPaperId);
+    setShowNewPaperModal(false);
+  };
+
+  const handleDeletePaper = (id: string) => {
+    if (confirm("确定要删除这个试卷吗？")) {
+      deletePaper(id);
+      const updatedPapers = getAllPapers();
+      setPapers(updatedPapers);
+      
+      if (currentPaperId === id) {
+        setCurrentPaperId(updatedPapers.length > 0 ? updatedPapers[0].id : null);
+      }
+    }
+  };
+
+  const handleEditPaper = (paperId: string) => {
+    const paper = papers.find((p) => p.id === paperId);
+    if (paper) {
+      setEditingPaper(paper);
+    }
+  };
+
+  const handleSaveEditedPaper = (updatedPaper: QuestionSet) => {
+    savePaper(updatedPaper);
+    const updatedPapers = getAllPapers();
+    setPapers(updatedPapers);
+    setEditingPaper(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-background relative">
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        papers={papers}
+        currentPaperId={currentPaperId || ""}
+        onSelectPaper={handleSelectPaper}
+        onNewPaper={handleNewPaper}
+        onEditPaper={handleEditPaper}
+        onDeletePaper={handleDeletePaper}
+      />
+
+      {/* Main Content */}
+      <div
+        className={cn(
+          "transition-all duration-300 min-h-screen",
+          sidebarOpen ? "ml-64" : "ml-0"
+        )}
+      >
+        {/* Quiz or Empty State */}
+        {currentPaper ? (
+          <div className="relative">
+            {/* Floating Controls */}
+            <div className="fixed top-8 left-0 right-0 z-10 px-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <motion.button
+                    whileHover={{ opacity: 0.6 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <PanelLeft className="w-5 h-5" />
+                  </motion.button>
+                  <h1 className="text-lg font-medium text-foreground">
+                    {currentPaper.title}
+                  </h1>
+                </div>
+                <motion.button
+                  whileHover={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSettingsModal(true)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Settings className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </div>
+
+            <QuizContainer
+              questions={currentPaper.questions}
+              title={currentPaper.title}
+              description={currentPaper.description}
+            />
+          </div>
+        ) : (
+          <div className="min-h-screen flex flex-col items-center justify-center p-4">
+            {/* Empty State Controls */}
+            <div className="fixed top-8 left-0 right-0 px-8">
+              <div className="flex items-center justify-between">
+                <motion.button
+                  whileHover={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <PanelLeft className="w-5 h-5" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ opacity: 0.6 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowSettingsModal(true)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Settings className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center max-w-md"
+            >
+              <div className="text-6xl mb-6">📚</div>
+              <h2 className="text-3xl font-bold mb-3 text-foreground">No Papers Yet</h2>
+              <p className="text-muted-foreground mb-8">
+                Start by importing words to generate your first practice paper.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowNewPaperModal(true)}
+                className="px-6 py-2.5 rounded-lg bg-foreground text-background hover:opacity-90 transition-all text-sm font-medium"
+              >
+                Create New Paper
+              </motion.button>
+            </motion.div>
+          </div>
+        )}
+      </div>
+
+      {/* New Paper Modal */}
+      <AnimatePresence mode="wait">
+        {showNewPaperModal && (
+          <NewPaperModal
+            onClose={() => setShowNewPaperModal(false)}
+            onPaperCreated={handlePaperCreated}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Edit Paper Modal */}
+      <AnimatePresence mode="wait">
+        {editingPaper && (
+          <EditPaperModal
+            paper={editingPaper}
+            onSave={handleSaveEditedPaper}
+            onClose={() => setEditingPaper(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Settings Modal */}
+      <AnimatePresence mode="wait">
+        {showSettingsModal && (
+          <SettingsModal onClose={() => setShowSettingsModal(false)} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

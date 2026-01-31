@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 9% 98%;
+    --foreground: 215 25% 27%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+    --primary: 215 25% 27%;
+    --primary-foreground: 60 9% 98%;
+    --secondary: 240 5% 45%;
+    --secondary-foreground: 60 9% 98%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --success: 160 84% 39%;
+    --success-light: 152 76% 90%;
+    --success-foreground: 0 0% 100%;
+    --error: 350 89% 60%;
+    --error-light: 0 86% 97%;
+    --error-foreground: 0 0% 100%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 217 91% 60%;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 60 9% 98%;
+    --card: 240 10% 7%;
+    --card-foreground: 60 9% 98%;
+    --primary: 60 9% 98%;
+    --primary-foreground: 240 10% 4%;
+    --secondary: 240 4% 46%;
+    --secondary-foreground: 60 9% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --success: 160 84% 39%;
+    --success-light: 160 50% 15%;
+    --success-foreground: 0 0% 100%;
+    --error: 350 89% 60%;
+    --error-light: 350 40% 15%;
+    --error-foreground: 0 0% 100%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 217 91% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md;
+  }
+  
+  .elegant-card {
+    @apply bg-white rounded-xl shadow-elegant border border-zinc-100;
+  }
+}
