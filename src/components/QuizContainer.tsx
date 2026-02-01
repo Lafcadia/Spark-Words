@@ -6,29 +6,71 @@ import { Question, AnswerState } from "@/types/question";
 import QuestionCard from "./QuestionCard";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
+import { getPaperProgress, savePaperProgress } from "@/lib/storage";
 
 interface QuizContainerProps {
   questions: Question[];
   title: string;
   description?: string;
+  paperId: string; // 添加paperId用于保存进度
 }
 
 export default function QuizContainer({
   questions,
   title,
   description,
+  paperId,
 }: QuizContainerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<AnswerState[]>(
-    questions.map((q) => ({
+  // 使用函数初始化state，先尝试加载保存的进度
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const savedProgress = getPaperProgress(paperId);
+    if (savedProgress && savedProgress.answers.length === questions.length) {
+      const progressMatches = savedProgress.answers.every(
+        (ans, idx) => ans.questionId === questions[idx].id
+      );
+      if (progressMatches) {
+        return savedProgress.currentIndex;
+      }
+    }
+    return 0;
+  });
+
+  const [answers, setAnswers] = useState<AnswerState[]>(() => {
+    const savedProgress = getPaperProgress(paperId);
+    if (savedProgress && savedProgress.answers.length === questions.length) {
+      const progressMatches = savedProgress.answers.every(
+        (ans, idx) => ans.questionId === questions[idx].id
+      );
+      if (progressMatches) {
+        return savedProgress.answers;
+      }
+    }
+    return questions.map((q) => ({
       questionId: q.id,
       userAnswer: "",
       isCorrect: null,
-    }))
-  );
+    }));
+  });
 
-  // 当 questions 变化时，重置 answers 和 currentIndex
+  // 当 paperId 或 questions 变化时，加载或重置进度
   useEffect(() => {
+    // 尝试加载保存的进度
+    const savedProgress = getPaperProgress(paperId);
+    
+    if (savedProgress && savedProgress.answers.length === questions.length) {
+      // 验证进度是否匹配当前题目
+      const progressMatches = savedProgress.answers.every(
+        (ans, idx) => ans.questionId === questions[idx].id
+      );
+      
+      if (progressMatches) {
+        setAnswers(savedProgress.answers);
+        setCurrentIndex(savedProgress.currentIndex);
+        return;
+      }
+    }
+    
+    // 如果没有有效进度，重置
     setAnswers(
       questions.map((q) => ({
         questionId: q.id,
@@ -37,7 +79,21 @@ export default function QuizContainer({
       }))
     );
     setCurrentIndex(0);
-  }, [questions]);
+  }, [paperId]);
+
+  // 自动保存进度
+  useEffect(() => {
+    if (questions.length === 0) return;
+    
+    const progress = {
+      paperId,
+      currentIndex,
+      answers,
+      lastUpdated: new Date().toISOString(),
+    };
+    
+    savePaperProgress(progress);
+  }, [paperId, currentIndex, answers, questions.length]);
 
   const currentQuestion = questions[currentIndex];
   const currentAnswer = answers[currentIndex];

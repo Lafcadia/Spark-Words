@@ -2,18 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Palette, Info, Sun, Moon, Monitor, ExternalLink, Sparkles, User, Github, Code } from "lucide-react";
+import { X, Palette, Info, Sun, Moon, Monitor, ExternalLink, Sparkles, User, Github, Code, Database } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
-type SettingCategory = "appearance" | "about";
+type SettingCategory = "appearance" | "data" | "about";
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [selectedCategory, setSelectedCategory] = useState<SettingCategory>("appearance");
   const { theme, setTheme } = useTheme();
+  const [importStrategy, setImportStrategy] = useState<'overwrite' | 'merge'>('merge');
+  const [showStrategyDialog, setShowStrategyDialog] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   // 清理函数：确保关闭时移除所有可能的样式残留
   useEffect(() => {
@@ -37,6 +40,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const categories = [
     { id: "appearance" as SettingCategory, label: "外观", icon: Palette },
+    { id: "data" as SettingCategory, label: "数据", icon: Database },
     { id: "about" as SettingCategory, label: "关于", icon: Info },
   ];
 
@@ -112,6 +116,187 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                 </div>
               </div>
             </div>
+          </div>
+        );
+      case "data":
+        return (
+          <div className="space-y-6">
+            {/* 导出数据 */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                导出数据
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                将所有试卷和进度导出为备份文件
+              </p>
+              <button
+                onClick={() => {
+                  try {
+                    const { exportAllData } = require('@/lib/storage');
+                    exportAllData();
+                  } catch (error) {
+                    alert('导出失败,请稍后再试');
+                  }
+                }}
+                className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-[13px] font-medium"
+              >
+                导出备份
+              </button>
+            </div>
+
+            {/* 分割线 */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
+
+            {/* 导入数据 */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                导入数据
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                从备份文件恢复数据
+              </p>
+              <input
+                type="file"
+                accept=".json"
+                id="import-data-input"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setPendingFile(file);
+                    setShowStrategyDialog(true);
+                  }
+                  e.target.value = ''; // 重置输入
+                }}
+              />
+              <button
+                onClick={() => document.getElementById('import-data-input')?.click()}
+                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-[13px] font-medium"
+              >
+                选择文件
+              </button>
+            </div>
+
+            {/* 分割线 */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
+
+            {/* 清空数据 */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                清空数据
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                删除所有试卷、进度和设置
+              </p>
+              <button
+                onClick={() => {
+                  if (confirm('确定要清空所有数据吗?此操作不可恢复!')) {
+                    try {
+                      const { clearAllData } = require('@/lib/storage');
+                      clearAllData();
+                      alert('数据已清空,刷新页面生效');
+                      window.location.reload();
+                    } catch (error) {
+                      alert('清空失败,请稍后再试');
+                    }
+                  }
+                }}
+                className="px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-[13px] font-medium"
+              >
+                清空所有数据
+              </button>
+            </div>
+
+            {/* 警告信息 */}
+            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+              <p className="text-[12px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                ⚠️ 导入数据时请谨慎选择策略,建议在导入前先导出当前数据进行备份。
+              </p>
+            </div>
+
+            {/* 导入策略对话框 */}
+            {showStrategyDialog && pendingFile && (
+              <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={() => {
+                setShowStrategyDialog(false);
+                setPendingFile(null);
+              }}>
+                <motion.div
+                  initial={{ scale: 0.96, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="bg-white dark:bg-zinc-900 rounded-xl shadow-2xl max-w-md w-full p-6 border border-zinc-200 dark:border-zinc-800"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+                    选择导入策略
+                  </h3>
+                  
+                  <div className="space-y-3 mb-6">
+                    <label className="flex items-start gap-3 p-3 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer transition-colors">
+                      <input
+                        type="radio"
+                        name="strategy"
+                        value="merge"
+                        checked={importStrategy === 'merge'}
+                        onChange={(e) => setImportStrategy(e.target.value as 'merge')}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <div className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">合并数据</div>
+                        <div className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5">保留现有数据,添加新的试卷(相同ID跳过)</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start gap-3 p-3 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 cursor-pointer transition-colors">
+                      <input
+                        type="radio"
+                        name="strategy"
+                        value="overwrite"
+                        checked={importStrategy === 'overwrite'}
+                        onChange={(e) => setImportStrategy(e.target.value as 'overwrite')}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <div className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">覆盖数据</div>
+                        <div className="text-[12px] text-zinc-500 dark:text-zinc-400 mt-0.5">删除现有数据,使用备份文件替换</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowStrategyDialog(false);
+                        setPendingFile(null);
+                      }}
+                      className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-[13px] font-medium"
+                    >
+                      取消
+                    </button>
+                    <button
+                      onClick={() => {
+                        const { importAllData } = require('@/lib/storage');
+                        importAllData(
+                          pendingFile,
+                          importStrategy,
+                          () => {
+                            alert('导入成功!刷新页面生效');
+                            window.location.reload();
+                          },
+                          (error: string) => {
+                            alert(error);
+                          }
+                        );
+                        setShowStrategyDialog(false);
+                        setPendingFile(null);
+                      }}
+                      className="flex-1 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-[13px] font-medium"
+                    >
+                      确认导入
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
           </div>
         );
       case "about":

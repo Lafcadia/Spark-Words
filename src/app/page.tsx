@@ -7,6 +7,8 @@ import {
   getAllPapers,
   savePaper,
   deletePaper,
+  getCurrentPaperId,
+  saveCurrentPaperId,
 } from "@/lib/storage";
 import { sampleQuestionSet } from "@/data/sampleData";
 import QuizContainer from "@/components/QuizContainer";
@@ -37,9 +39,20 @@ export default function Home() {
       savePaper(sampleQuestionSet);
       setPapers([sampleQuestionSet]);
       setCurrentPaperId(sampleQuestionSet.id);
+      saveCurrentPaperId(sampleQuestionSet.id);
     } else {
       setPapers(loadedPapers);
-      setCurrentPaperId(loadedPapers[0].id);
+      
+      // 尝试恢复上次选择的试卷
+      const savedPaperId = getCurrentPaperId();
+      const paperExists = savedPaperId && loadedPapers.some(p => p.id === savedPaperId);
+      
+      if (paperExists) {
+        setCurrentPaperId(savedPaperId);
+      } else {
+        setCurrentPaperId(loadedPapers[0].id);
+        saveCurrentPaperId(loadedPapers[0].id);
+      }
     }
   }, []);
 
@@ -47,6 +60,7 @@ export default function Home() {
 
   const handleSelectPaper = (id: string) => {
     setCurrentPaperId(id);
+    saveCurrentPaperId(id);
     setSidebarOpen(false);
   };
 
@@ -58,6 +72,7 @@ export default function Home() {
   const handlePaperCreated = (updatedPapers: QuestionSet[], newPaperId: string) => {
     setPapers(updatedPapers);
     setCurrentPaperId(newPaperId);
+    saveCurrentPaperId(newPaperId);
     setShowNewPaperModal(false);
   };
 
@@ -68,7 +83,11 @@ export default function Home() {
       setPapers(updatedPapers);
       
       if (currentPaperId === id) {
-        setCurrentPaperId(updatedPapers.length > 0 ? updatedPapers[0].id : null);
+        const newPaperId = updatedPapers.length > 0 ? updatedPapers[0].id : null;
+        setCurrentPaperId(newPaperId);
+        if (newPaperId) {
+          saveCurrentPaperId(newPaperId);
+        }
       }
     }
   };
@@ -148,6 +167,7 @@ export default function Home() {
               questions={currentPaper.questions}
               title={currentPaper.title}
               description={currentPaper.description}
+              paperId={currentPaper.id}
             />
           </div>
         ) : (

@@ -56,3 +56,11 @@ export interface AnswerState {
   userAnswer: string;
   isCorrect: boolean | null; // null 表示未答题
 }
+
+// 试卷做题进度
+export interface PaperProgress {
+  paperId: string;
+  currentIndex: number; // 当前题目索引
+  answers: AnswerState[]; // 所有题目的答题状态
+  lastUpdated: string; // 最后更新时间
+}
