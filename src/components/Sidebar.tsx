@@ -53,7 +53,21 @@ export default function Sidebar({
   };
   return (
     <>
-      {/* 侧边栏 - 仅固定模式 */}
+      {/* 移动端遮罩层 */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 侧边栏 - 移动端覆盖式，PC端固定式 */}
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
@@ -143,7 +157,7 @@ export default function Sidebar({
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setShowCommunityLibrary(true)}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all text-[14px] font-medium"
+                className="w-full flex items-center justify-center gap-2 px-3 py-3 md:py-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all text-[14px] font-medium touch-manipulation"
               >
                 <Globe className="w-4 h-4" strokeWidth={2} />
                 社区试卷
@@ -152,7 +166,7 @@ export default function Sidebar({
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={onNewPaper}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-foreground text-background hover:opacity-90 transition-all text-sm font-normal"
+                className="w-full flex items-center justify-center gap-2 px-3 py-3 md:py-2 rounded-md bg-foreground text-background hover:opacity-90 transition-all text-sm font-normal touch-manipulation"
               >
                 <Plus className="w-4 h-4" />
                 New Paper

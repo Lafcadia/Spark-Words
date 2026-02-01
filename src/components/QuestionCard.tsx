@@ -59,7 +59,7 @@ export default function QuestionCard({
       {/* 纯粹的题目展示，无卡片包裹 */}
       <div className="relative">
         {/* 句子展示区域 */}
-        <div className="font-serif text-xl md:text-2xl leading-relaxed text-foreground mb-6">
+        <div className="font-serif text-lg md:text-xl lg:text-2xl leading-relaxed text-foreground mb-6">
           {parts.map((part, index) => {
             // 检查是否是首字母
             if (part && part.length === 1 && /[a-z]/i.test(part) && index > 0 && parts[index + 1] && parts[index + 1].startsWith('_')) {
@@ -77,7 +77,7 @@ export default function QuestionCard({
                   transition={{ duration: 0.5 }}
                 >
                   {/* 首字母提示 */}
-                  <span className="font-sans font-medium text-xl md:text-2xl mr-0.5">{part}</span>
+                  <span className="font-sans font-medium text-lg md:text-xl lg:text-2xl mr-0.5">{part}</span>
                   {/* 输入框 */}
                   <input
                     type="text"
@@ -87,7 +87,7 @@ export default function QuestionCard({
                     autoFocus
                     className={cn(
                       "inline-block border-b-2 bg-transparent outline-none transition-all duration-300",
-                      "font-sans font-medium text-xl md:text-2xl px-1",
+                      "font-sans font-medium text-lg md:text-xl lg:text-2xl px-1 min-h-[44px] md:min-h-0",
                       isCorrect === null && "border-muted-foreground/30 focus:border-accent",
                       isCorrect === true && "border-success text-success",
                       isCorrect === false && "border-error text-error"
@@ -110,13 +110,13 @@ export default function QuestionCard({
 
         {/* 翻译 - 点击切换显示/模糊 */}
         {translation && (
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <motion.button
               onClick={() => setShowTranslation(!showTranslation)}
               whileHover={{ opacity: 1 }}
-              className="flex items-center gap-2 text-muted-foreground text-sm italic opacity-60 transition-opacity"
+              className="flex items-center gap-2 text-muted-foreground text-sm md:text-base italic opacity-60 transition-opacity touch-manipulation"
             >
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3.5 h-3.5 md:w-4 md:h-4" />
               <span className={cn(!showTranslation && "blur-sm select-none")}>
                 {translation}
               </span>
@@ -125,7 +125,7 @@ export default function QuestionCard({
         )}
 
         {/* 提交按钮 - 简化 */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {isCorrect !== true && (
             <>
               <motion.button
@@ -134,7 +134,7 @@ export default function QuestionCard({
                 whileHover={{ scale: userAnswer ? 1.02 : 1 }}
                 whileTap={{ scale: userAnswer ? 0.98 : 1 }}
                 className={cn(
-                  "px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+                  "px-6 py-3 md:py-2 rounded-lg text-sm font-medium transition-all duration-300 touch-manipulation",
                   "disabled:opacity-30 disabled:cursor-not-allowed",
                   "bg-foreground text-background hover:opacity-90"
                 )}
@@ -147,7 +147,7 @@ export default function QuestionCard({
                 onClick={() => setShowAnswer(!showAnswer)}
                 whileHover={{ opacity: 1 }}
                 className={cn(
-                  "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                  "flex items-center gap-1.5 px-4 py-3 md:py-2 rounded-lg text-sm font-medium transition-all touch-manipulation",
                   showAnswer
                     ? "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border"

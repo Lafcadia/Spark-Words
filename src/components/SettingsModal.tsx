@@ -69,7 +69,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           <div className="space-y-8">
             {/* 主题设置 */}
             <div>
-              <div className="flex items-center justify-between py-2">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between py-2 gap-4">
+                {/* 文字部分 - 垂直排布 */}
                 <div>
                   <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100">
                     明暗主题
@@ -78,7 +79,8 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                     选择界面外观
                   </p>
                 </div>
-                <div className="grid grid-cols-3 items-center p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg relative w-[270px]">
+                {/* 按钮组 - 移动端全宽，桌面端固定宽度 */}
+                <div className="grid grid-cols-3 items-center p-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg relative w-full md:w-[270px]">
                   <div 
                     className="absolute bg-white dark:bg-zinc-700 rounded-md transition-all duration-200 ease-out"
                     style={{
@@ -100,7 +102,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                           setTheme(option.value);
                         }}
                         className={`
-                          relative flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-200 w-full
+                          relative flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-[13px] font-medium transition-colors duration-200 w-full touch-manipulation
                           ${
                             isSelected
                               ? "text-zinc-900 dark:text-zinc-100"
@@ -421,7 +423,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 20 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden relative border border-zinc-200/50 dark:border-zinc-800/50"
+        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden relative border border-zinc-200/50 dark:border-zinc-800/50 mx-4 max-h-[90vh] md:max-h-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -439,9 +441,9 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
         </div>
 
         {/* Content with Sidebar */}
-        <div className="flex" style={{ height: "540px" }}>
-          {/* Left Sidebar */}
-          <div className="w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/30 py-4 px-3">
+        <div className="flex flex-col md:flex-row" style={{ height: "540px" }}>
+          {/* Left Sidebar - 桌面端显示 */}
+          <div className="hidden md:block md:w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/30 py-4 px-3">
             <nav className="space-y-0.5">
               {categories.map((category) => {
                 const Icon = category.icon;
@@ -467,8 +469,30 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
             </nav>
           </div>
 
+          {/* Mobile Tab Navigation */}
+          <div className="flex md:hidden border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              const isSelected = selectedCategory === category.id;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap transition-colors ${
+                    isSelected
+                      ? "border-b-2 border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100 font-medium"
+                      : "text-zinc-600 dark:text-zinc-400"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" strokeWidth={2} />
+                  <span>{category.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Right Content */}
-          <div className="flex-1 py-8 px-10 overflow-y-auto custom-scrollbar">
+          <div className="flex-1 py-6 md:py-8 px-4 md:px-10 overflow-y-auto custom-scrollbar">
             {renderContent()}
           </div>
         </div>

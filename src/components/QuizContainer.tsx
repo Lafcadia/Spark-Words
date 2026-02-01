@@ -153,27 +153,27 @@ export default function QuizContainer({
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   return (
-    <div className="min-h-screen py-16 px-4">
+    <div className="min-h-screen py-8 md:py-16 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Progress Section - 顶部极简进度 */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mb-20"
+          className="mb-12 md:mb-20"
         >
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs md:text-sm text-muted-foreground">
               {currentIndex + 1} / {questions.length}
             </span>
-            <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Trophy className="w-3.5 h-3.5 text-success" />
+            <span className="text-xs md:text-sm text-muted-foreground flex items-center gap-1.5">
+              <Trophy className="w-3 md:w-3.5 h-3 md:h-3.5 text-success" />
               {correctCount} / {questions.length}
             </span>
           </div>
           {/* 可点击的进度条 */}
           <div 
-            className="w-full h-2 bg-muted rounded-full overflow-hidden cursor-pointer relative group"
+            className="w-full h-2 md:h-2.5 bg-muted rounded-full overflow-hidden cursor-pointer relative group"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const x = e.clientX - rect.left;
@@ -214,7 +214,7 @@ export default function QuizContainer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="flex justify-between items-center mt-12"
+          className="flex justify-between items-center mt-8 md:mt-12"
         >
           <motion.button
             onClick={handlePrevious}
@@ -222,7 +222,7 @@ export default function QuizContainer({
             whileHover={{ scale: currentIndex !== 0 ? 1.05 : 1 }}
             whileTap={{ scale: currentIndex !== 0 ? 0.95 : 1 }}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all text-sm",
+              "flex items-center gap-1.5 px-4 py-2.5 md:py-2 rounded-lg transition-all text-sm touch-manipulation",
               currentIndex === 0
                 ? "opacity-20 cursor-not-allowed text-muted-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -240,7 +240,7 @@ export default function QuizContainer({
             whileHover={{ scale: currentIndex !== questions.length - 1 ? 1.05 : 1 }}
             whileTap={{ scale: currentIndex !== questions.length - 1 ? 0.95 : 1 }}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg transition-all text-sm",
+              "flex items-center gap-1.5 px-4 py-2.5 md:py-2 rounded-lg transition-all text-sm touch-manipulation",
               currentIndex === questions.length - 1
                 ? "opacity-20 cursor-not-allowed text-muted-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -259,16 +259,16 @@ export default function QuizContainer({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="mt-20 text-center"
+              className="mt-12 md:mt-20 text-center"
             >
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 0.6, repeat: 2 }}
-                className="text-6xl mb-4"
+                className="text-5xl md:text-6xl mb-3 md:mb-4"
               >
                 🎉
               </motion.div>
-              <h2 className="text-3xl font-bold text-success mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-success mb-2">
                 Perfect!
               </h2>
               <p className="text-sm text-muted-foreground">

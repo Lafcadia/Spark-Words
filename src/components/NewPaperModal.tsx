@@ -221,12 +221,12 @@ export default function NewPaperModal({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 20 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden relative border border-zinc-200/50 dark:border-zinc-800/50"
+        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden relative border border-zinc-200/50 dark:border-zinc-800/50 mx-4"
         onClick={(e) => e.stopPropagation()}
-        style={{ height: "85vh", maxHeight: "900px" }}
+        style={{ height: "90vh", maxHeight: "900px" }}
       >
         {/* Header */}
-        <div className="h-14 flex items-center justify-between px-6 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
             新建试卷
           </h1>
@@ -240,9 +240,9 @@ export default function NewPaperModal({
         </div>
 
         {/* Content with Sidebar */}
-        <div className="flex" style={{ height: "calc(85vh - 3.5rem)", maxHeight: "calc(900px - 3.5rem)" }}>
-          {/* 左侧标签栏 */}
-          <div className="w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/30 py-4 px-3">
+        <div className="flex flex-col md:flex-row" style={{ height: "calc(90vh - 3.5rem)", maxHeight: "calc(900px - 3.5rem)" }}>
+          {/* 左侧标签栏 - 桌面端显示 */}
+          <div className="hidden md:block md:w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-950/30 py-4 px-3">
             <nav className="space-y-0.5">
               {tabs.map((tab, index) => {
                 const isSelected = activeTab === tab.id;
@@ -276,9 +276,37 @@ export default function NewPaperModal({
             </nav>
           </div>
 
+          {/* Mobile Tab Navigation */}
+          <div className="flex md:hidden border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+            {tabs.map((tab, index) => {
+              const isSelected = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap transition-colors ${
+                    isSelected
+                      ? "border-b-2 border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100 font-medium"
+                      : "text-zinc-600 dark:text-zinc-400"
+                  }`}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded flex items-center justify-center text-xs font-semibold",
+                    isSelected
+                      ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                  )}>
+                    {index + 1}
+                  </div>
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* 右侧内容区 */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto py-8 px-10 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto py-6 md:py-8 px-4 md:px-10 custom-scrollbar">
               {/* Words Tab */}
               {activeTab === "words" && (
               <motion.div

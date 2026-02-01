@@ -80,11 +80,11 @@ export default function SharePaperModal({
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.96, opacity: 0, y: 20 }}
         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-zinc-200/50 dark:border-zinc-800/50"
+        className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col border border-zinc-200/50 dark:border-zinc-800/50 mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="h-14 flex items-center justify-between px-6 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="h-14 flex items-center justify-between px-4 md:px-6 border-b border-zinc-200 dark:border-zinc-800">
           <h1 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
             分享到社区
           </h1>
