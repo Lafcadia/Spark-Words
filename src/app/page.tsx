@@ -87,6 +87,11 @@ export default function Home() {
     setEditingPaper(null);
   };
 
+  const handleRefreshPapers = () => {
+    const updatedPapers = getAllPapers();
+    setPapers(updatedPapers);
+  };
+
   return (
     <div className="min-h-screen bg-background relative">
       {/* Sidebar */}
@@ -99,6 +104,7 @@ export default function Home() {
         onNewPaper={handleNewPaper}
         onEditPaper={handleEditPaper}
         onDeletePaper={handleDeletePaper}
+        onRefreshPapers={handleRefreshPapers}
       />
 
       {/* Main Content */}

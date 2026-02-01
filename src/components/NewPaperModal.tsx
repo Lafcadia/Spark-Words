@@ -278,8 +278,7 @@ export default function NewPaperModal({
 
           {/* 右侧内容区 */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* 内容滚动区域 */}
-            <div className="flex-1 overflow-y-auto py-8 px-10">
+            <div className="flex-1 overflow-y-auto py-8 px-10 custom-scrollbar">
               {/* Words Tab */}
               {activeTab === "words" && (
               <motion.div
@@ -440,7 +439,7 @@ export default function NewPaperModal({
                           )}
                         </button>
                       </div>
-                      <pre className="w-full max-h-[500px] p-4 border border-border rounded-lg bg-muted/50 font-mono text-xs leading-relaxed whitespace-pre-wrap overflow-auto">
+                      <pre className="w-full max-h-[500px] p-4 border border-border rounded-lg bg-muted/50 font-mono text-xs leading-relaxed whitespace-pre-wrap overflow-auto custom-scrollbar">
                         {generatedPrompt}
                       </pre>
                     </div>

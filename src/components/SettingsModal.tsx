@@ -283,7 +283,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           </div>
 
           {/* Right Content */}
-          <div className="flex-1 py-8 px-10 overflow-y-auto">
+          <div className="flex-1 py-8 px-10 overflow-y-auto custom-scrollbar">
             {renderContent()}
           </div>
         </div>

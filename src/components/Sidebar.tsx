@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Plus, FileText, PanelLeftClose } from "lucide-react";
+import { Plus, FileText, PanelLeftClose, Globe } from "lucide-react";
 import { QuestionSet } from "@/types/question";
 import ContextMenu from "./ContextMenu";
+import CommunityLibraryModal from "./CommunityLibraryModal";
+import SharePaperModal from "./SharePaperModal";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ interface SidebarProps {
   onNewPaper: () => void;
   onEditPaper: (paperId: string) => void;
   onDeletePaper: (paperId: string) => void;
+  onRefreshPapers?: () => void;
 }
 
 export default function Sidebar({
@@ -27,12 +30,15 @@ export default function Sidebar({
   onNewPaper,
   onEditPaper,
   onDeletePaper,
+  onRefreshPapers,
 }: SidebarProps) {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     paperId: string;
   } | null>(null);
+  const [showCommunityLibrary, setShowCommunityLibrary] = useState(false);
+  const [shareModalPaper, setShareModalPaper] = useState<QuestionSet | null>(null);
 
   const handleContextMenu = (
     e: React.MouseEvent,
@@ -72,7 +78,7 @@ export default function Sidebar({
             </div>
 
             {/* Papers List */}
-            <div className="flex-1 overflow-y-auto px-2 py-3">
+            <div className="flex-1 overflow-y-auto px-2 py-3 custom-scrollbar">
               {papers.map((paper) => (
                 <motion.button
                   key={paper.id}
@@ -131,8 +137,17 @@ export default function Sidebar({
               ))}
             </div>
 
-            {/* New Paper Button */}
-            <div className="px-2 py-3 border-t border-border">
+            {/* Action Buttons */}
+            <div className="px-2 py-3 border-t border-border space-y-2">
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => setShowCommunityLibrary(true)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all text-[14px] font-medium"
+              >
+                <Globe className="w-4 h-4" strokeWidth={2} />
+                社区试卷
+              </motion.button>
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
@@ -155,7 +170,36 @@ export default function Sidebar({
             y={contextMenu.y}
             onEdit={() => onEditPaper(contextMenu.paperId)}
             onDelete={() => onDeletePaper(contextMenu.paperId)}
+            onShare={() => {
+              const paper = papers.find(p => p.id === contextMenu.paperId);
+              if (paper) {
+                setShareModalPaper(paper);
+              }
+              setContextMenu(null);
+            }}
             onClose={() => setContextMenu(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Community Library Modal */}
+      <AnimatePresence mode="wait">
+        {showCommunityLibrary && (
+          <CommunityLibraryModal
+            isOpen={showCommunityLibrary}
+            onClose={() => setShowCommunityLibrary(false)}
+            onImportSuccess={onRefreshPapers}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Share Paper Modal */}
+      <AnimatePresence mode="wait">
+        {shareModalPaper && (
+          <SharePaperModal
+            isOpen={!!shareModalPaper}
+            onClose={() => setShareModalPaper(null)}
+            paper={shareModalPaper}
           />
         )}
       </AnimatePresence>

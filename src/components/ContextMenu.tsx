@@ -2,13 +2,14 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, Share2 } from "lucide-react";
 
 interface ContextMenuProps {
   x: number;
   y: number;
   onEdit: () => void;
   onDelete: () => void;
+  onShare?: () => void;
   onClose: () => void;
 }
 
@@ -17,6 +18,7 @@ export default function ContextMenu({
   y,
   onEdit,
   onDelete,
+  onShare,
   onClose,
 }: ContextMenuProps) {
   useEffect(() => {
@@ -55,6 +57,19 @@ export default function ContextMenu({
         <Edit2 className="w-4 h-4" />
         编辑
       </button>
+      {onShare && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onShare();
+            onClose();
+          }}
+          className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2 transition-colors"
+        >
+          <Share2 className="w-4 h-4" />
+          分享到社区
+        </button>
+      )}
       <div className="h-px bg-border my-1" />
       <button
         onClick={(e) => {
