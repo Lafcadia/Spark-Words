@@ -82,10 +82,9 @@ export default function CommunityLibraryModal({
   const handleImport = async (paper: CommunityPaper) => {
     try {
       importCommunityPaper(paper);
-      alert("试卷导入成功！");
       setSelectedPaper(null);
       onImportSuccess?.();
-      onClose();
+      // 无感导入，不弹出提示，不刷新页面
     } catch (error) {
       console.error("Failed to import paper:", error);
       alert("导入失败，请重试");
