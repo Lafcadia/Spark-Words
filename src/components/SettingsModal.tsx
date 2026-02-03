@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Palette, Info, Sun, Moon, Monitor, ExternalLink, Sparkles, User, Github, Code, Database } from "lucide-react";
+import { X, Palette, Info, Sun, Moon, Monitor, ExternalLink, Sparkles, User, Github, Code, Database, Bot, Check, Loader2 } from "lucide-react";
+import { SiOpenai, SiAnthropic, SiGooglegemini } from "react-icons/si";
 import { useTheme } from "@/contexts/ThemeContext";
+import { AIConfig, AI_PROVIDER_PRESETS, AIProvider } from "@/types/aiConfig";
+import { saveAIConfig, getAIConfig, getAIConfigByProvider, deleteAIConfig, getAllAIConfigList, toggleAIConfigEnabled } from "@/lib/storage";
+import { testAIConnection } from "@/lib/aiService";
 
 interface SettingsModalProps {
   onClose: () => void;
 }
 
-type SettingCategory = "appearance" | "data" | "about";
+type SettingCategory = "appearance" | "ai" | "data" | "about";
 
 export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [selectedCategory, setSelectedCategory] = useState<SettingCategory>("appearance");
@@ -17,6 +21,71 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
   const [importStrategy, setImportStrategy] = useState<'overwrite' | 'merge'>('merge');
   const [showStrategyDialog, setShowStrategyDialog] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+
+  // AI 配置状态
+  const [aiConfig, setAiConfig] = useState<AIConfig | null>(null);
+  const [allAIConfigs, setAllAIConfigs] = useState<AIConfig[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>('openai');
+  const [apiKey, setApiKey] = useState<string>('');
+  const [apiUrl, setApiUrl] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [customModelInput, setCustomModelInput] = useState<string>('');
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  // 加载所有 AI 配置
+  const loadAllConfigs = () => {
+    const configs = getAllAIConfigList();
+    setAllAIConfigs(configs);
+  };
+
+  // 加载 AI 配置
+  useEffect(() => {
+    loadAllConfigs();
+    const config = getAIConfig();
+    if (config) {
+      setSelectedProvider(config.provider);
+      loadProviderConfig(config.provider);
+    } else {
+      // 默认配置
+      const defaultPreset = AI_PROVIDER_PRESETS[0];
+      setSelectedProvider(defaultPreset.id);
+      loadProviderConfig(defaultPreset.id);
+    }
+  }, []);
+
+  // 加载特定服务商的配置
+  const loadProviderConfig = (provider: AIProvider) => {
+    const config = getAIConfigByProvider(provider);
+    if (config) {
+      setAiConfig(config);
+      setApiKey(config.apiKey || '');
+      setApiUrl(config.apiUrl || '');
+      
+      // 检查是否为预设模型
+      const preset = AI_PROVIDER_PRESETS.find(p => p.id === provider);
+      const isPresetModel = preset?.models.some(m => m.value === config.model);
+      
+      if (isPresetModel) {
+        setSelectedModel(config.model || '');
+        setCustomModelInput('');
+      } else {
+        setSelectedModel('custom');
+        setCustomModelInput(config.model || '');
+      }
+    } else {
+      // 无配置，使用默认值
+      const preset = AI_PROVIDER_PRESETS.find(p => p.id === provider);
+      if (preset) {
+        setAiConfig(null);
+        setApiKey('');
+        setApiUrl(preset.defaultApiUrl || '');
+        setSelectedModel(preset.defaultModel || '');
+        setCustomModelInput('');
+      }
+    }
+    setTestResult(null);
+  };
 
   // 清理函数：确保关闭时移除所有可能的样式残留
   useEffect(() => {
@@ -40,6 +109,7 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
 
   const categories = [
     { id: "appearance" as SettingCategory, label: "外观", icon: Palette },
+    { id: "ai" as SettingCategory, label: "AI服务", icon: Bot },
     { id: "data" as SettingCategory, label: "数据", icon: Database },
     { id: "about" as SettingCategory, label: "关于", icon: Info },
   ];
@@ -117,6 +187,362 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
                   })}
                 </div>
               </div>
+            </div>
+          </div>
+        );
+      case "ai":
+        const currentPreset = AI_PROVIDER_PRESETS.find(p => p.id === selectedProvider);
+        const currentConfig = allAIConfigs.find(c => c.provider === selectedProvider);
+        
+        return (
+          <div className="space-y-6">
+            {/* 已保存的配置列表 */}
+            {allAIConfigs.length > 0 && (
+              <div>
+                <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                  已保存的配置
+                </h3>
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                  点击切换启用的服务商
+                </p>
+                <div className="space-y-2">
+                  {allAIConfigs.map((config) => {
+                    const preset = AI_PROVIDER_PRESETS.find(p => p.id === config.provider);
+                    return (
+                      <div
+                        key={config.provider}
+                        className={`
+                          flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer
+                          ${config.enabled
+                            ? 'bg-zinc-50 dark:bg-zinc-800 border-zinc-900 dark:border-zinc-100'
+                            : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                          }
+                        `}
+                        onClick={() => {
+                          if (!config.enabled) {
+                            toggleAIConfigEnabled(config.provider);
+                            loadAllConfigs();
+                          }
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${config.enabled ? 'bg-green-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} />
+                          <div>
+                            <p className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100">
+                              {preset?.name || config.provider}
+                            </p>
+                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                              {config.model}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {config.enabled && (
+                            <span className="text-[11px] px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded">
+                              启用中
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`确定要删除 ${preset?.name || config.provider} 的配置吗？`)) {
+                                deleteAIConfig(config.provider);
+                                loadAllConfigs();
+                                if (config.provider === selectedProvider) {
+                                  setAiConfig(null);
+                                  setApiKey('');
+                                  setTestResult({ success: true, message: '配置已删除' });
+                                }
+                              }
+                            }}
+                            className="p-1.5 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {allAIConfigs.length > 0 && <div className="border-t border-zinc-200 dark:border-zinc-800" />}
+
+            {/* AI 服务商选择 */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                {currentConfig ? '编辑配置' : '添加新配置'}
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                选择用于生成试卷的 AI 服务
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {AI_PROVIDER_PRESETS.map((preset) => {
+                  const isSelected = selectedProvider === preset.id;
+                  let Icon = null;
+                  
+                  if (preset.id === 'openai') {
+                    Icon = SiOpenai;
+                  } else if (preset.id === 'claude') {
+                    Icon = SiAnthropic;
+                  } else if (preset.id === 'gemini') {
+                    Icon = SiGooglegemini;
+                  }
+                  
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => {
+                        setSelectedProvider(preset.id);
+                        loadProviderConfig(preset.id);
+                      }}
+                      className={`
+                        px-4 py-2.5 rounded-lg text-[13px] font-medium transition-all flex items-center justify-center gap-2
+                        ${isSelected
+                          ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        }
+                      `}
+                    >
+                      {Icon && (
+                        <Icon 
+                          className={`w-4 h-4 ${
+                            preset.id === 'openai' && !isSelected 
+                              ? 'text-black dark:text-white' 
+                              : ''
+                          }`}
+                        />
+                      )}
+                      {preset.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 分割线 */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
+
+            {/* API Key */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                API Key
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                输入您的 API 密钥（加密存储）
+              </p>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  setTestResult(null);
+                }}
+                placeholder="sk-..."
+                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 text-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+
+            {/* API 地址 */}
+            <div>
+              <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                API 地址
+              </h3>
+              <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                自定义 API 端点（可选）
+              </p>
+              <input
+                type="text"
+                value={apiUrl}
+                onChange={(e) => {
+                  setApiUrl(e.target.value);
+                  setTestResult(null);
+                }}
+                placeholder="https://api.openai.com/v1"
+                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 text-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+
+            {/* 模型选择 */}
+            {currentPreset && currentPreset.models.length > 0 && (
+              <div>
+                <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                  模型
+                </h3>
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                  选择预设模型或自定义输入
+                </p>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => {
+                    setSelectedModel(e.target.value);
+                    if (e.target.value !== 'custom') {
+                      setCustomModelInput('');
+                    }
+                    setTestResult(null);
+                  }}
+                  className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 text-zinc-900 dark:text-zinc-100"
+                >
+                  {currentPreset.models.map((model) => (
+                    <option key={model.value} value={model.value}>
+                      {model.label}
+                    </option>
+                  ))}
+                  <option value="custom">自定义...</option>
+                </select>
+                {selectedModel === 'custom' && (
+                  <input
+                    type="text"
+                    value={customModelInput}
+                    onChange={(e) => {
+                      setCustomModelInput(e.target.value);
+                      setTestResult(null);
+                    }}
+                    placeholder="输入模型名称，如：gpt-5.2-instant"
+                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 text-zinc-900 dark:text-zinc-100 mt-2"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* 自定义模型名称 */}
+            {selectedProvider === 'custom' && (
+              <div>
+                <h3 className="text-[14px] font-medium text-zinc-800 dark:text-zinc-100 mb-1">
+                  模型名称
+                </h3>
+                <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-3">
+                  输入自定义模型名称
+                </p>
+                <input
+                  type="text"
+                  value={selectedModel}
+                  onChange={(e) => {
+                    setSelectedModel(e.target.value);
+                    setTestResult(null);
+                  }}
+                  placeholder="例如：gpt-5.2-instant"
+                  className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 text-zinc-900 dark:text-zinc-100"
+                />
+              </div>
+            )}
+
+            {/* 分割线 */}
+            <div className="border-t border-zinc-200 dark:border-zinc-800" />
+
+            {/* 测试结果 */}
+            {testResult && (
+              <div className={`p-3 rounded-lg ${testResult.success ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
+                <div className="flex items-center gap-2">
+                  {testResult.success ? (
+                    <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  )}
+                  <p className={`text-[12px] ${testResult.success ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+                    {testResult.message}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* 操作按钮 */}
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  if (!apiKey.trim()) {
+                    setTestResult({ success: false, message: '请输入 API Key' });
+                    return;
+                  }
+
+                  setTestingConnection(true);
+                  setTestResult(null);
+
+                  const finalModel = selectedModel === 'custom' ? customModelInput.trim() : selectedModel.trim();
+
+                  const config: AIConfig = {
+                    provider: selectedProvider,
+                    apiKey: apiKey.trim(),
+                    apiUrl: apiUrl.trim() || undefined,
+                    model: finalModel,
+                    enabled: true,
+                  };
+
+                  const result = await testAIConnection(config);
+                  setTestingConnection(false);
+
+                  if (result.success) {
+                    setTestResult({ success: true, message: '连接成功！' });
+                  } else {
+                    setTestResult({ success: false, message: result.error || '连接失败' });
+                  }
+                }}
+                disabled={testingConnection}
+                className="flex-1 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-[13px] font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {testingConnection ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    测试中...
+                  </>
+                ) : (
+                  '测试连接'
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  if (!apiKey.trim()) {
+                    setTestResult({ success: false, message: '请输入 API Key' });
+                    return;
+                  }
+
+                  const finalModel = selectedModel === 'custom' ? customModelInput.trim() : selectedModel.trim();
+
+                  const config: AIConfig = {
+                    provider: selectedProvider,
+                    apiKey: apiKey.trim(),
+                    apiUrl: apiUrl.trim() || undefined,
+                    model: finalModel,
+                    enabled: true,
+                  };
+
+                  saveAIConfig(config);
+                  setAiConfig(config);
+                  loadAllConfigs(); // 重新加载配置列表
+                  setTestResult({ success: true, message: '配置已保存！' });
+                }}
+                className="flex-1 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors text-[13px] font-medium"
+              >
+                保存配置
+              </button>
+            </div>
+
+            {/* 删除配置 */}
+            {aiConfig && (
+              <div>
+                <button
+                  onClick={() => {
+                    if (confirm('确定要删除此配置吗？')) {
+                      deleteAIConfig(selectedProvider);
+                      loadAllConfigs();
+                      setAiConfig(null);
+                      setApiKey('');
+                      setTestResult({ success: true, message: '配置已删除' });
+                    }
+                  }}
+                  className="w-full px-4 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-[13px] font-medium"
+                >
+                  删除配置
+                </button>
+              </div>
+            )}
+
+            {/* 警告信息 */}
+            <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg">
+              <p className="text-[12px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                ⚠️ API Key 将加密存储在本地浏览器中。请妥善保管您的密钥，不要与他人分享。
+              </p>
             </div>
           </div>
         );

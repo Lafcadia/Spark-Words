@@ -34,3 +34,5 @@ next-env.d.ts
 
 # mcp memory
 .cunzhi-memory
+.agent
+.sanshu-memory

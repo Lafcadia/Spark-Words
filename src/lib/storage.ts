@@ -355,3 +355,197 @@ export function clearAllData(): void {
   }
 }
 
+// ==================== AI 配置管理 ====================
+import { AIConfig, MultiAIConfig } from "@/types/aiConfig";
+
+const AI_CONFIG_KEY = "spark-words-ai-config";
+const ENCRYPTION_KEY = "spark-words-encryption-v1"; // 简单加密密钥
+
+/**
+ * 简单加密函数（使用 Base64 + XOR）
+ */
+function encryptString(text: string): string {
+  const key = ENCRYPTION_KEY;
+  let encrypted = '';
+  for (let i = 0; i < text.length; i++) {
+    encrypted += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return btoa(encrypted);
+}
+
+/**
+ * 简单解密函数
+ */
+function decryptString(encrypted: string): string {
+  try {
+    const key = ENCRYPTION_KEY;
+    const decrypted = atob(encrypted);
+    let text = '';
+    for (let i = 0; i < decrypted.length; i++) {
+      text += String.fromCharCode(decrypted.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    }
+    return text;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * 保存 AI 配置
+ */
+export function saveAIConfig(config: AIConfig): void {
+  if (typeof window === "undefined") return;
+  
+  try {
+    // 获取所有配置
+    const allConfigs = getAllAIConfigs();
+    
+    // 如果保存的配置是启用的，禁用其他所有配置
+    if (config.enabled) {
+      Object.keys(allConfigs).forEach(key => {
+        if (key !== config.provider) {
+          allConfigs[key].enabled = false;
+        }
+      });
+    }
+    
+    // 加密 API Key
+    const encryptedConfig = {
+      ...config,
+      apiKey: encryptString(config.apiKey),
+    };
+    
+    // 更新对应服务商的配置
+    allConfigs[config.provider] = encryptedConfig;
+    
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(allConfigs));
+  } catch (error) {
+    console.error("Failed to save AI config:", error);
+    throw error;
+  }
+}
+
+/**
+ * 获取所有 AI 配置
+ */
+function getAllAIConfigs(): MultiAIConfig {
+  if (typeof window === "undefined") return {};
+  
+  try {
+    const data = localStorage.getItem(AI_CONFIG_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (error) {
+    console.error("Failed to load AI configs:", error);
+    return {};
+  }
+}
+
+/**
+ * 获取 AI 配置（返回当前启用的配置）
+ */
+export function getAIConfig(): AIConfig | null {
+  if (typeof window === "undefined") return null;
+  
+  try {
+    const allConfigs = getAllAIConfigs();
+    
+    // 找到启用的配置
+    const enabledConfig = Object.values(allConfigs).find(c => c.enabled);
+    if (!enabledConfig) return null;
+    
+    // 解密 API Key
+    return {
+      ...enabledConfig,
+      apiKey: decryptString(enabledConfig.apiKey),
+    };
+  } catch (error) {
+    console.error("Failed to load AI config:", error);
+    return null;
+  }
+}
+
+/**
+ * 获取特定服务商的配置
+ */
+export function getAIConfigByProvider(provider: string): AIConfig | null {
+  if (typeof window === "undefined") return null;
+  
+  try {
+    const allConfigs = getAllAIConfigs();
+    const config = allConfigs[provider];
+    
+    if (!config) return null;
+    
+    // 解密 API Key
+    return {
+      ...config,
+      apiKey: decryptString(config.apiKey),
+    };
+  } catch (error) {
+    console.error("Failed to load AI config:", error);
+    return null;
+  }
+}
+
+/**
+ * 删除指定服务商的 AI 配置
+ */
+export function deleteAIConfig(provider: string): void {
+  if (typeof window === "undefined") return;
+  
+  try {
+    const allConfigs = getAllAIConfigs();
+    delete allConfigs[provider];
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(allConfigs));
+  } catch (error) {
+    console.error("Failed to delete AI config:", error);
+    throw error;
+  }
+}
+
+/**
+ * 切换指定服务商的启用状态
+ */
+export function toggleAIConfigEnabled(provider: string): boolean {
+  if (typeof window === "undefined") return false;
+  
+  try {
+    const allConfigs = getAllAIConfigs();
+    const config = allConfigs[provider];
+    
+    if (!config) return false;
+    
+    // 禁用所有其他配置
+    Object.keys(allConfigs).forEach(key => {
+      allConfigs[key].enabled = false;
+    });
+    
+    // 启用当前配置
+    allConfigs[provider].enabled = true;
+    
+    localStorage.setItem(AI_CONFIG_KEY, JSON.stringify(allConfigs));
+    return true;
+  } catch (error) {
+    console.error("Failed to toggle AI config:", error);
+    return false;
+  }
+}
+
+/**
+ * 获取所有服务商的配置列表
+ */
+export function getAllAIConfigList(): AIConfig[] {
+  if (typeof window === "undefined") return [];
+  
+  try {
+    const allConfigs = getAllAIConfigs();
+    return Object.values(allConfigs).map(config => ({
+      ...config,
+      apiKey: decryptString(config.apiKey),
+    }));
+  } catch (error) {
+    console.error("Failed to load AI config list:", error);
+    return [];
+  }
+}
+

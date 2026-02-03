@@ -9,6 +9,7 @@ import {
   deletePaper,
   getCurrentPaperId,
   saveCurrentPaperId,
+  getAIConfig,
 } from "@/lib/storage";
 import { sampleQuestionSet } from "@/data/sampleData";
 import QuizContainer from "@/components/QuizContainer";
@@ -16,6 +17,7 @@ import Sidebar from "@/components/Sidebar";
 import NewPaperModal from "@/components/NewPaperModal";
 import EditPaperModal from "@/components/EditPaperModal";
 import SettingsModal from "@/components/SettingsModal";
+import CreatePaperTypeModal from "@/components/CreatePaperTypeModal";
 import {
   PanelLeft,
   Settings,
@@ -26,7 +28,9 @@ export default function Home() {
   const [papers, setPapers] = useState<QuestionSet[]>([]);
   const [currentPaperId, setCurrentPaperId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showCreateTypeModal, setShowCreateTypeModal] = useState(false);
   const [showNewPaperModal, setShowNewPaperModal] = useState(false);
+  const [newPaperMode, setNewPaperMode] = useState<'manual' | 'ai'>('manual');
   const [editingPaper, setEditingPaper] = useState<QuestionSet | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -65,8 +69,13 @@ export default function Home() {
   };
 
   const handleNewPaper = () => {
-    setShowNewPaperModal(true);
+    setShowCreateTypeModal(true);
     setSidebarOpen(false);
+  };
+
+  const handleCreateTypeSelect = (mode: 'manual' | 'ai') => {
+    setNewPaperMode(mode);
+    setShowNewPaperModal(true);
   };
 
   const handlePaperCreated = (updatedPapers: QuestionSet[], newPaperId: string) => {
@@ -202,7 +211,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowNewPaperModal(true)}
+                onClick={() => setShowCreateTypeModal(true)}
                 className="px-6 py-3 md:py-2.5 rounded-lg bg-foreground text-background hover:opacity-90 transition-all text-sm font-medium touch-manipulation"
               >
                 Create New Paper
@@ -212,10 +221,23 @@ export default function Home() {
         )}
       </div>
 
+      {/* Create Type Selection Modal */}
+      <AnimatePresence mode="wait">
+        {showCreateTypeModal && (
+          <CreatePaperTypeModal
+            onClose={() => setShowCreateTypeModal(false)}
+            onSelectManual={() => handleCreateTypeSelect('manual')}
+            onSelectAI={() => handleCreateTypeSelect('ai')}
+            hasAIConfig={!!getAIConfig()}
+          />
+        )}
+      </AnimatePresence>
+
       {/* New Paper Modal */}
       <AnimatePresence mode="wait">
         {showNewPaperModal && (
           <NewPaperModal
+            mode={newPaperMode}
             onClose={() => setShowNewPaperModal(false)}
             onPaperCreated={handlePaperCreated}
           />
