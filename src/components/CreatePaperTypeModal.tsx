@@ -76,8 +76,8 @@ export default function CreatePaperTypeModal({
             className="w-full p-5 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 rounded-xl transition-all group text-left"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center shrink-0 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors">
-                <FileText className="w-6 h-6 text-zinc-600 dark:text-zinc-300" strokeWidth={2} />
+              <div className="w-12 h-12 rounded-lg bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center shrink-0 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-600 transition-colors">
+                <FileText className="w-6 h-6 text-zinc-700 dark:text-zinc-300" strokeWidth={2} />
               </div>
               <div className="flex-1">
                 <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
@@ -106,14 +106,14 @@ export default function CreatePaperTypeModal({
             }}
             disabled={!hasAIConfig}
             className={`w-full p-5 border-2 rounded-xl transition-all group text-left ${hasAIConfig
-                ? 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700'
-                : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 opacity-50 cursor-not-allowed'
+              ? 'bg-accent/10 dark:bg-accent/10 hover:bg-accent/15 dark:hover:bg-accent/15 border-accent/30 dark:border-accent/30 hover:border-accent/50 dark:hover:border-accent/50'
+              : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 opacity-50 cursor-not-allowed'
               }`}
           >
             <div className="flex items-start gap-4">
               <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 transition-colors ${hasAIConfig
-                  ? 'bg-gradient-to-br from-blue-500 to-cyan-500 group-hover:from-blue-600 group-hover:to-cyan-600'
-                  : 'bg-zinc-200 dark:bg-zinc-700'
+                ? 'bg-accent group-hover:bg-accent/90'
+                : 'bg-zinc-100 dark:bg-zinc-700'
                 }`}>
                 <Sparkles className={`w-6 h-6 ${hasAIConfig ? 'text-white' : 'text-zinc-400'}`} strokeWidth={2} />
               </div>
@@ -123,7 +123,7 @@ export default function CreatePaperTypeModal({
                     AI 一键生成
                   </h3>
                   {hasAIConfig && (
-                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[11px] font-medium rounded">
+                    <span className="px-2 py-0.5 bg-accent/15 dark:bg-accent/20 text-accent dark:text-accent border border-accent/20 dark:border-accent/30 text-[11px] font-medium rounded">
                       推荐
                     </span>
                   )}
