@@ -13,7 +13,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-spark.ghs.red-10b981?style=flat-square&logo=vercel&logoColor=white)](https://spark.ghs.red)
 
 [在线体验](https://spark.ghs.red) · [社区题库](https://github.com/Mystic-Stars/spark-words-community/) · [报告问题](https://github.com/Mystic-Stars/spark-words/issues)
-
+</div>
 ---
 
 ## 🌟 核心亮点
@@ -61,4 +61,3 @@ npm run dev
 <div align="center">
 Powered by Garbage Human Studio, especially for English learners.
 </div>
-
