@@ -1,157 +1,64 @@
+
+<div align="center">
+
 # Spark Words
 
-高考英语首字母填空智能练习平台
+**首字母填空，让单词记忆不再枯燥。**
 
-## 功能特性
+专为英语学习者打造的沉浸式练习工具。没有花哨的干扰，只有你、语境和流畅的输入体验。
 
-✨ **首字母填空练习**: 优雅的键盘输入体验，实时判断正误  
-🤖 **AI 生成题目**: 提供 Prompt 模板，支持 AI 生成题目  
-📝 **单词表导入**: 导入单词列表，自动生成练习 Prompt  
-🎨 **现代化设计**: Academic Minimalism 风格，流畅的动画交互
+[![GitHub Stars](https://img.shields.io/github/stars/Mystic-Stars/spark-words?style=social)](https://github.com/Mystic-Stars/spark-words/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Mystic-Stars/spark-words?style=social)](https://github.com/Mystic-Stars/spark-words/network/members)
+[![License](https://img.shields.io/github/license/Mystic-Stars/spark-words?style=flat-square)](https://github.com/Mystic-Stars/spark-words/blob/main/LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-spark.ghs.red-10b981?style=flat-square&logo=vercel&logoColor=white)](https://spark.ghs.red)
 
-## 技术栈
-
-- **框架**: Next.js 15 (App Router)
-- **样式**: Tailwind CSS
-- **动画**: Framer Motion
-- **语言**: TypeScript
-- **UI组件**: Shadcn UI 设计理念
-
-## 快速开始
-
-### 1. 安装依赖
-
-\`\`\`bash
-npm install
-# 或
-pnpm install
-# 或
-yarn install
-\`\`\`
-
-### 2. 启动开发服务器
-
-\`\`\`bash
-npm run dev
-# 或
-pnpm dev
-# 或
-yarn dev
-\`\`\`
-
-在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看应用。
-
-### 3. 构建生产版本
-
-\`\`\`bash
-npm run build
-npm start
-\`\`\`
-
-## 使用方式
-
-### 方式一：使用示例题目
-
-点击右上角的 "加载示例" 按钮，即可体验预设的练习题。
-
-### 方式二：导入单词表生成题目
-
-1. 点击 "导入单词表" 按钮
-2. 输入或粘贴单词列表（支持逗号、空格、换行分隔）
-3. 点击 "生成 Prompt"
-4. 复制生成的 Prompt，发送给 AI（如 ChatGPT、Claude）
-5. 将 AI 返回的 JSON 通过 "导入题目" 功能导入
-6. 开始练习！
-
-### 方式三：直接导入 JSON
-
-1. 点击 "查看 Prompt" 查看题目格式要求
-2. 复制 Prompt 发送给 AI 生成题目
-3. 点击 "导入题目"，粘贴 AI 生成的 JSON
-4. 开始练习！
-
-## 项目结构
-
-\`\`\`
-Spark-Words/
-├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── layout.tsx         # 根布局
-│   │   ├── page.tsx           # 主页面
-│   │   └── globals.css        # 全局样式
-│   ├── components/            # React 组件
-│   │   ├── QuestionCard.tsx   # 单题卡片
-│   │   ├── QuizContainer.tsx  # 练习容器
-│   │   └── WordListImporter.tsx # 单词表导入器
-│   ├── types/                 # TypeScript 类型定义
-│   │   └── question.ts
-│   ├── data/                  # 数据和配置
-│   │   └── sampleData.ts      # 示例数据
-│   └── lib/                   # 工具函数
-│       ├── utils.ts
-│       └── promptUtils.ts
-├── public/                    # 静态资源
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── next.config.ts
-\`\`\`
-
-## 设计理念
-
-### 视觉风格
-- **Academic Minimalism** 融合 **Modern SaaS**
-- 灵感来源：Notion、Medium、Linear、Vercel
-
-### 色彩方案
-- **背景**: 柔和米白色 (#F9F9F7)
-- **文字**: 深石板色 (#1e293b)
-- **成功**: 翠绿色 (#10b981)
-- **错误**: 玫瑰红 (#f43f5e)
-- **强调**: 蓝色 (#3b82f6)
-
-### 字体
-- **UI元素**: Sans-serif (Inter / Geist Sans)
-- **题目句子**: Serif (Merriweather) - 营造阅读感
-
-### 交互动效
-- 输入框聚焦时蓝色光晕
-- 答对时平滑过渡到绿色
-- 答错时轻微抖动效果
-- 按钮点击缩放反馈
-
-## 数据格式
-
-题目 JSON 格式示例：
-
-\`\`\`json
-{
-  "title": "高考英语首字母填空练习",
-  "description": "高考常见词汇首字母填空",
-  "questions": [
-    {
-      "id": "q1",
-      "sentence": "The scientist made a remarkable d_____ in the field of quantum physics.",
-      "answer": "discovery",
-      "hint": "d",
-      "translation": "这位科学家在量子物理学领域取得了卓越的发现。"
-    }
-  ]
-}
-\`\`\`
-
-## 开发说明
-
-- 使用 TypeScript 确保类型安全
-- 所有组件采用函数式组件 + Hooks
-- 使用 "use client" 标记客户端组件
-- Tailwind CSS 实现响应式设计
-- Framer Motion 实现平滑动画
-
-## License
-
-MIT
+[在线体验](https://spark.ghs.red) · [社区题库](https://github.com/Mystic-Stars/spark-words-community/) · [报告问题](https://github.com/Mystic-Stars/spark-words/issues)
 
 ---
 
-Made with ❤️ for English learners
+## 🌟 核心亮点
+
+- 🧘 **极简设计**：摒弃繁杂，无干扰，专注于学习内容本身。
+- 🤖 **AI 驱动**：深度融合AI体验，支持API和手动导入多种方式。
+- 🌏 **社区题库**：发现大家都在练什么，优质题库一键导入。
+
+## 🚀 上手指南
+
+### 1. 快速体验
+直接点击 **New Paper** 按照提示建立新练习，或者浏览社区寻找感兴趣的题库。
+
+### 2. 探索社区
+点击侧边栏的 🌏 **社区试卷**，获取更多优质练习资源，不再为找题发愁。
+
+> 💡 **社区题库仓库**: [Mystic-Stars/spark-words-community](https://github.com/Mystic-Stars/spark-words-community/) - 欢迎提交你的精选题目！
+
+## 💻 本地运行
+
+如果你是开发者，想要自己部署或修改：
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/Mystic-Stars/spark-words.git
+
+# 2. 安装依赖
+npm install
+
+# 3. 启动服务
+npm run dev
+```
+
+打开浏览器访问 [http://localhost:3000](http://localhost:3000) 即可开始。
+
+## 🎨 技术栈
+
+- **框架**: Next.js 15
+- **样式**: Tailwind CSS
+- **动效**: Framer Motion
+- **UI**: Shadcn UI 理念
+
+---
+
+<div align="center">
+Powered by Garbage Human Studio, especially for English learners.
+</div>
+
